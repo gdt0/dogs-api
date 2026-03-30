@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dogs API</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #333; line-height: 1.6; padding: 20px; }
+    .container { max-width: 900px; margin: 0 auto; }
+    h1 { text-align: center; margin-bottom: 10px; color: #1a1a1a; }
+    .subtitle { text-align: center; color: #666; margin-bottom: 30px; font-size: 14px; }
+    
+    .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .card h2 { margin-bottom: 15px; font-size: 18px; border-bottom: 2px solid #1a1a1a; padding-bottom: 8px; }
+    
+    .form-group { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+    input[type="text"] { flex: 1; min-width: 200px; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+    input[type="text"]:focus { outline: none; border-color: #1a1a1a; }
+    button { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s; }
+    .btn-primary { background: #1a1a1a; color: white; }
+    .btn-primary:hover { background: #333; }
+    .btn-danger { background: #dc3545; color: white; }
+    .btn-danger:hover { background: #c82333; }
+    .btn-small { padding: 6px 12px; font-size: 12px; }
+    .btn-edit { background: #ffc107; color: #000; }
+    .btn-edit:hover { background: #e0a800; }
+    
+    .search-box { margin-bottom: 20px; }
+    .search-box input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; }
+    
+    .dogs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
+    .dog-card { background: #fafafa; border: 1px solid #eee; border-radius: 6px; padding: 15px; transition: all 0.2s; }
+    .dog-card:hover { border-color: #1a1a1a; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .dog-breed { font-weight: 600; font-size: 16px; text-transform: capitalize; margin-bottom: 8px; color: #1a1a1a; }
+    .dog-varieties { font-size: 13px; color: #666; }
+    .dog-varieties span { display: inline-block; background: #e9ecef; padding: 2px 8px; border-radius: 3px; margin: 2px; font-size: 12px; }
+    .dog-actions { margin-top: 12px; display: flex; gap: 8px; }
+    
+    .empty { text-align: center; padding: 40px; color: #999; }
+    .error { background: #f8d7da; color: #721c24; padding: 10px 15px; border-radius: 4px; margin-bottom: 15px; display: none; }
+    .success { background: #d4edda; color: #155724; padding: 10px 15px; border-radius: 4px; margin-bottom: 15px; display: none; }
+    
+    .toast { position: fixed; bottom: 20px; right: 20px; padding: 12px 20px; background: #1a1a1a; color: white; border-radius: 6px; opacity: 0; transition: opacity 0.3s; z-index: 1000; }
+    .toast.show { opacity: 1; }
+    
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+    .modal.show { display: flex; }
+    .modal-content { background: white; padding: 25px; border-radius: 8px; width: 90%; max-width: 400px; }
+    .modal h3 { margin-bottom: 15px; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+    .varieties-input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-top: 10px; min-height: 60px; }
+    .varieties-help { font-size: 12px; color: #666; margin-top: 5px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🐕 Dogs API</h1>
+    <p class="subtitle">Full CRUD Interface • Data persists in JSON file</p>
+    
+    <div class="card">
+      <h2>Add New Breed</h2>
+      <div id="error" class="error"></div>
+      <div id="success" class="success"></div>
+      <div class="form-group">
+        <input type="text" id="newBreed" placeholder="Breed name (e.g., labrador)">
+        <input type="text" id="newVarieties" placeholder="Varieties (comma separated, optional)">
+        <button class="btn-primary" onclick="addBreed()">Add Breed</button>
+      </div>
+    </div>
+    
+    <div class="card">
+      <h2>All Breeds</h2>
+      <div class="search-box">
+        <input type="text" id="search" placeholder="Search breeds..." oninput="filterDogs()">
+      </div>
+      <div id="dogsGrid" class="dogs-grid"></div>
+      <div id="empty" class="empty" style="display:none">No breeds found</div>
+    </div>
+  </div>
+  
+  <div id="toast" class="toast"></div>
+  
+  <div id="editModal" class="modal">
+    <div class="modal-content">
+      <h3>Edit Breed</h3>
+      <input type="hidden" id="editBreed">
+      <label>Breed Name</label>
+      <input type="text" id="editBreedName" style="width:100%;margin-bottom:10px;padding:10px;border:1px solid #ddd;border-radius:4px">
+      <label>Varieties (one per line or comma separated)</label>
+      <textarea id="editVarieties" class="varieties-input" placeholder="miniature&#10;standard&#10;toy"></textarea>
+      <p class="varieties-help">Enter each variety on a new line or comma separated</p>
+      <div class="modal-actions">
+        <button class="btn-danger btn-small" onclick="closeModal()">Cancel</button>
+        <button class="btn-primary" onclick="saveEdit()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = '/api/dogs';
+    let dogs = {};
+    
+    async function loadDogs() {
+      try {
+        const res = await fetch(API);
+        dogs = await res.json();
+        renderDogs();
+      } catch (e) {
+        showError('Failed to load dogs');
+      }
+    }
+    
+    function renderDogs(filter = '') {
+      const grid = document.getElementById('dogsGrid');
+      const empty = document.getElementById('empty');
+      const filtered = Object.entries(dogs)
+        .filter(([breed]) => breed.toLowerCase().includes(filter.toLowerCase()))
+        .sort((a, b) => a[0].localeCompare(b[0]));
+      
+      if (filtered.length === 0) {
+        grid.innerHTML = '';
+        empty.style.display = 'block';
+        return;
+      }
+      
+      empty.style.display = 'none';
+      grid.innerHTML = filtered.map(([breed, varieties]) => `
+        <div class="dog-card">
+          <div class="dog-breed">${breed}</div>
+          <div class="dog-varieties">
+            ${varieties.length > 0 
+              ? varieties.map(v => `<span>${v}</span>`).join('') 
+              : '<em>No varieties</em>'}
+          </div>
+          <div class="dog-actions">
+            <button class="btn-edit btn-small" onclick="editBreed('${breed}')">Edit</button>
+            <button class="btn-danger btn-small" onclick="deleteBreed('${breed}')">Delete</button>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function filterDogs() {
+      const filter = document.getElementById('search').value;
+      renderDogs(filter);
+    }
+    
+    async function addBreed() {
+      const breedInput = document.getElementById('newBreed');
+      const varietiesInput = document.getElementById('newVarieties');
+      const breed = breedInput.value.trim().toLowerCase();
+      const varietiesStr = varietiesInput.value.trim();
+      
+      if (!breed) {
+        showError('Please enter a breed name');
+        return;
+      }
+      
+      const varieties = varietiesStr 
+        ? varietiesStr.split(/[,\n]/).map(v => v.trim()).filter(v => v)
+        : [];
+      
+      try {
+        const res = await fetch(API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ breed, varieties })
+        });
+        
+        if (res.status === 409) {
+          showError('Breed already exists');
+          return;
+        }
+        
+        if (!res.ok) throw new Error('Failed to add');
+        
+        breedInput.value = '';
+        varietiesInput.value = '';
+        hideMessages();
+        await loadDogs();
+        showToast('Breed added successfully!');
+      } catch (e) {
+        showError('Failed to add breed');
+      }
+    }
+    
+    function editBreed(breed) {
+      document.getElementById('editBreed').value = breed;
+      document.getElementById('editBreedName').value = breed;
+      document.getElementById('editVarieties').value = (dogs[breed] || []).join('\n');
+      document.getElementById('editModal').classList.add('show');
+    }
+    
+    function closeModal() {
+      document.getElementById('editModal').classList.remove('show');
+    }
+    
+    async function saveEdit() {
+      const oldBreed = document.getElementById('editBreed').value;
+      const newBreed = document.getElementById('editBreedName').value.trim().toLowerCase();
+      const varietiesStr = document.getElementById('editVarieties').value;
+      
+      if (!newBreed) {
+        showError('Please enter a breed name');
+        return;
+      }
+      
+      const varieties = varietiesStr 
+        ? varietiesStr.split(/[,\n]/).map(v => v.trim()).filter(v => v)
+        : [];
+      
+      try {
+        // If breed name changed, delete old and create new
+        if (oldBreed !== newBreed) {
+          await fetch(`${API}/${oldBreed}`, { method: 'DELETE' });
+          await fetch(API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ breed: newBreed, varieties })
+          });
+        } else {
+          await fetch(`${API}/${newBreed}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ varieties })
+          });
+        }
+        
+        closeModal();
+        await loadDogs();
+        showToast('Breed updated!');
+      } catch (e) {
+        showError('Failed to update breed');
+      }
+    }
+    
+    async function deleteBreed(breed) {
+      if (!confirm(`Delete "${breed}"?`)) return;
+      
+      try {
+        await fetch(`${API}/${breed}`, { method: 'DELETE' });
+        await loadDogs();
+        showToast('Breed deleted');
+      } catch (e) {
+        showError('Failed to delete breed');
+      }
+    }
+    
+    function showError(msg) {
+      const el = document.getElementById('error');
+      el.textContent = msg;
+      el.style.display = 'block';
+      setTimeout(() => el.style.display = 'none', 3000);
+    }
+    
+    function showToast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 2500);
+    }
+    
+    function hideMessages() {
+      document.getElementById('error').style.display = 'none';
+      document.getElementById('success').style.display = 'none';
+    }
+    
+    loadDogs();
+  </script>
+</body>
+</html>
