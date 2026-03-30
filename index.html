@@ -3,79 +3,487 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dogs API</title>
+  <title>Paws · Dogs API</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #333; line-height: 1.6; padding: 20px; }
-    .container { max-width: 900px; margin: 0 auto; }
-    h1 { text-align: center; margin-bottom: 10px; color: #1a1a1a; }
-    .subtitle { text-align: center; color: #666; margin-bottom: 30px; font-size: 14px; }
     
-    .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-    .card h2 { margin-bottom: 15px; font-size: 18px; border-bottom: 2px solid #1a1a1a; padding-bottom: 8px; }
+    :root {
+      --bg: #fafaf9;
+      --bg-card: #ffffff;
+      --bg-hover: #f5f5f4;
+      --text: #1c1917;
+      --text-muted: #78716c;
+      --border: #e7e5e4;
+      --accent: #292524;
+      --accent-hover: #44403c;
+      --danger: #dc2626;
+      --danger-hover: #b91c1c;
+      --success: #16a34a;
+      --warning: #ca8a04;
+      --radius: 12px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+      --shadow-hover: 0 4px 20px rgba(0,0,0,0.08);
+    }
     
-    .form-group { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
-    input[type="text"] { flex: 1; min-width: 200px; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
-    input[type="text"]:focus { outline: none; border-color: #1a1a1a; }
-    button { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s; }
-    .btn-primary { background: #1a1a1a; color: white; }
-    .btn-primary:hover { background: #333; }
-    .btn-danger { background: #dc3545; color: white; }
-    .btn-danger:hover { background: #c82333; }
-    .btn-small { padding: 6px 12px; font-size: 12px; }
-    .btn-edit { background: #ffc107; color: #000; }
-    .btn-edit:hover { background: #e0a800; }
+    body {
+      font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
     
-    .search-box { margin-bottom: 20px; }
-    .search-box input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
     
-    .dogs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
-    .dog-card { background: #fafafa; border: 1px solid #eee; border-radius: 6px; padding: 15px; transition: all 0.2s; }
-    .dog-card:hover { border-color: #1a1a1a; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-    .dog-breed { font-weight: 600; font-size: 16px; text-transform: capitalize; margin-bottom: 8px; color: #1a1a1a; }
-    .dog-varieties { font-size: 13px; color: #666; }
-    .dog-varieties span { display: inline-block; background: #e9ecef; padding: 2px 8px; border-radius: 3px; margin: 2px; font-size: 12px; }
-    .dog-actions { margin-top: 12px; display: flex; gap: 8px; }
+    /* Header */
+    header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
     
-    .empty { text-align: center; padding: 40px; color: #999; }
-    .error { background: #f8d7da; color: #721c24; padding: 10px 15px; border-radius: 4px; margin-bottom: 15px; display: none; }
-    .success { background: #d4edda; color: #155724; padding: 10px 15px; border-radius: 4px; margin-bottom: 15px; display: none; }
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
     
-    .toast { position: fixed; bottom: 20px; right: 20px; padding: 12px 20px; background: #1a1a1a; color: white; border-radius: 6px; opacity: 0; transition: opacity 0.3s; z-index: 1000; }
-    .toast.show { opacity: 1; }
+    .logo-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--accent);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
     
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+    h1 {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 15px;
+      margin-top: 6px;
+    }
+    
+    /* Add Card */
+    .add-card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+      margin-bottom: 32px;
+      border: 1px solid var(--border);
+    }
+    
+    .add-card h2 {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+    
+    .form-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    
+    input[type="text"] {
+      flex: 1;
+      min-width: 180px;
+      padding: 12px 16px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 15px;
+      font-family: inherit;
+      background: var(--bg);
+      transition: all 0.15s ease;
+    }
+    
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: var(--bg-card);
+      box-shadow: 0 0 0 3px rgba(41, 37, 36, 0.08);
+    }
+    
+    input[type="text"]::placeholder { color: #a8a29e; }
+    
+    button {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+    
+    .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+    .btn-primary:active { transform: translateY(0); }
+    
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-danger:hover { background: var(--danger-hover); }
+    
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-muted);
+      padding: 8px 12px;
+    }
+    
+    .btn-ghost:hover { background: var(--bg-hover); color: var(--text); }
+    
+    /* Breeds Section */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    
+    .section-header h2 {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+    
+    .count-badge {
+      background: var(--bg);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      font-family: 'DM Mono', monospace;
+    }
+    
+    .search-box {
+      position: relative;
+    }
+    
+    .search-box input {
+      width: 260px;
+      padding: 10px 14px 10px 40px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: inherit;
+      background: var(--bg-card);
+      transition: all 0.15s ease;
+    }
+    
+    .search-box input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(41, 37, 36, 0.08);
+    }
+    
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+    
+    /* Dogs Grid */
+    .dogs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    
+    .dog-card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      transition: all 0.2s ease;
+    }
+    
+    .dog-card:hover {
+      box-shadow: var(--shadow-hover);
+      transform: translateY(-2px);
+    }
+    
+    .dog-image {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      background: var(--bg);
+      display: block;
+    }
+    
+    .dog-image.loading {
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .dog-image-placeholder {
+      width: 100%;
+      height: 180px;
+      background: linear-gradient(135deg, var(--bg) 0%, var(--bg-hover) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      opacity: 0.3;
+    }
+    
+    .dog-content { padding: 16px; }
+    
+    .dog-breed {
+      font-weight: 600;
+      font-size: 17px;
+      text-transform: capitalize;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .dog-varieties {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+    
+    .dog-varieties span {
+      display: inline-block;
+      background: var(--bg);
+      padding: 3px 8px;
+      border-radius: 6px;
+      margin: 2px;
+      font-size: 12px;
+    }
+    
+    .dog-actions {
+      display: flex;
+      gap: 8px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+    
+    .dog-actions button {
+      flex: 1;
+      padding: 8px 12px;
+      font-size: 13px;
+      justify-content: center;
+    }
+    
+    /* Empty State */
+    .empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+    
+    .empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.4; }
+    .empty h3 { font-size: 16px; margin-bottom: 4px; color: var(--text); }
+    .empty p { font-size: 14px; }
+    
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      padding: 14px 24px;
+      background: var(--accent);
+      color: white;
+      border-radius: 10px;
+      font-weight: 500;
+      font-size: 14px;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 1000;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    }
+    
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+    
+    .toast.error { background: var(--danger); }
+    .toast.success { background: var(--success); }
+    
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    
     .modal.show { display: flex; }
-    .modal-content { background: white; padding: 25px; border-radius: 8px; width: 90%; max-width: 400px; }
-    .modal h3 { margin-bottom: 15px; }
-    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
-    .varieties-input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-top: 10px; min-height: 60px; }
-    .varieties-help { font-size: 12px; color: #666; margin-top: 5px; }
+    
+    .modal-content {
+      background: var(--bg-card);
+      padding: 28px;
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    }
+    
+    .modal h3 {
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+    
+    .modal label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    
+    .modal input, .modal textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 15px;
+      font-family: inherit;
+      background: var(--bg);
+      margin-bottom: 16px;
+      transition: all 0.15s ease;
+    }
+    
+    .modal input:focus, .modal textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: var(--bg-card);
+    }
+    
+    .modal textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    
+    .modal-help {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: -12px;
+      margin-bottom: 16px;
+    }
+    
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    
+    .modal-actions button { padding: 10px 18px; }
+    
+    /* Error/Success Messages */
+    .message {
+      padding: 12px 16px;
+      border-radius: 10px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      display: none;
+    }
+    
+    .message.error {
+      background: #fef2f2;
+      color: var(--danger);
+      border: 1px solid #fecaca;
+    }
+    
+    .message.success {
+      background: #f0fdf4;
+      color: var(--success);
+      border: 1px solid #bbf7d0;
+    }
+    
+    /* Responsive */
+    @media (max-width: 640px) {
+      .container { padding: 24px 16px 60px; }
+      h1 { font-size: 26px; }
+      .form-row { flex-direction: column; }
+      .form-row input, .form-row button { width: 100%; }
+      .search-box input { width: 100%; }
+      .dogs-grid { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>🐕 Dogs API</h1>
-    <p class="subtitle">Full CRUD Interface • Data persists in JSON file</p>
+    <header>
+      <div class="logo">
+        <div class="logo-icon">🐕</div>
+        <h1>Paws</h1>
+      </div>
+      <p class="subtitle">Dog breed database · Add, edit, explore</p>
+    </header>
     
-    <div class="card">
+    <div class="add-card">
       <h2>Add New Breed</h2>
-      <div id="error" class="error"></div>
-      <div id="success" class="success"></div>
-      <div class="form-group">
-        <input type="text" id="newBreed" placeholder="Breed name (e.g., labrador)">
-        <input type="text" id="newVarieties" placeholder="Varieties (comma separated, optional)">
-        <button class="btn-primary" onclick="addBreed()">Add Breed</button>
+      <div id="message" class="message"></div>
+      <div class="form-row">
+        <input type="text" id="newBreed" placeholder="Breed name (e.g., golden retriever)">
+        <input type="text" id="newVarieties" placeholder="Varieties (optional)">
+        <button class="btn-primary" onclick="addBreed()">+ Add Breed</button>
       </div>
     </div>
     
-    <div class="card">
+    <div class="section-header">
       <h2>All Breeds</h2>
-      <div class="search-box">
-        <input type="text" id="search" placeholder="Search breeds..." oninput="filterDogs()">
+      <div style="display: flex; gap: 12px; align-items: center;">
+        <span id="count" class="count-badge">0</span>
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="search" placeholder="Search breeds..." oninput="filterDogs()">
+        </div>
       </div>
-      <div id="dogsGrid" class="dogs-grid"></div>
-      <div id="empty" class="empty" style="display:none">No breeds found</div>
+    </div>
+    
+    <div id="dogsGrid" class="dogs-grid"></div>
+    <div id="empty" class="empty" style="display:none">
+      <div class="empty-icon">🐾</div>
+      <h3>No breeds found</h3>
+      <p>Try a different search or add a new breed</p>
     </div>
   </div>
   
@@ -86,29 +494,90 @@
       <h3>Edit Breed</h3>
       <input type="hidden" id="editBreed">
       <label>Breed Name</label>
-      <input type="text" id="editBreedName" style="width:100%;margin-bottom:10px;padding:10px;border:1px solid #ddd;border-radius:4px">
-      <label>Varieties (one per line or comma separated)</label>
-      <textarea id="editVarieties" class="varieties-input" placeholder="miniature&#10;standard&#10;toy"></textarea>
-      <p class="varieties-help">Enter each variety on a new line or comma separated</p>
+      <input type="text" id="editBreedName">
+      <label>Varieties</label>
+      <textarea id="editVarieties" placeholder="miniature&#10;standard&#10;toy"></textarea>
+      <p class="modal-help">Enter each variety on a new line</p>
       <div class="modal-actions">
-        <button class="btn-danger btn-small" onclick="closeModal()">Cancel</button>
-        <button class="btn-primary" onclick="saveEdit()">Save</button>
+        <button class="btn-ghost" onclick="closeModal()">Cancel</button>
+        <button class="btn-primary" onclick="saveEdit()">Save Changes</button>
       </div>
     </div>
   </div>
 
   <script>
     const API = '/api/dogs';
+    const DOG_API = 'https://dog.ceo/api';
     let dogs = {};
+    let dogImages = {};
+    let imageLoadFailed = {};
     
     async function loadDogs() {
       try {
         const res = await fetch(API);
         dogs = await res.json();
+        document.getElementById('count').textContent = Object.keys(dogs).length;
         renderDogs();
+        prefetchImages();
       } catch (e) {
-        showError('Failed to load dogs');
+        showToast('Failed to load breeds', 'error');
       }
+    }
+    
+    async function prefetchImages() {
+      const breeds = Object.keys(dogs);
+      for (const breed of breeds) {
+        fetchDogImage(breed);
+      }
+    }
+    
+    async function fetchDogImage(breed) {
+      if (dogImages[breed] || imageLoadFailed[breed]) return;
+      
+      // Map our breed names to dog.ceo format
+      const apiBreed = breed.replace(/([A-Z])/g, ' $1').toLowerCase().trim();
+      
+      try {
+        const res = await fetch(`${DOG_API}/breed/${apiBreed}/images/random`);
+        const data = await res.json();
+        if (data.status === 'success' && data.message) {
+          dogImages[breed] = data.message;
+        } else {
+          imageLoadFailed[breed] = true;
+        }
+      } catch (e) {
+        // Try alternate name formats
+        const alts = [
+          breed.replace(/ /g, '-'),
+          breed.includes('-') ? breed.replace(/-/g, ' ') : breed + '-mix',
+          breed.includes('-') ? breed.split('-')[0] : ''
+        ];
+        
+        for (const alt of alts) {
+          if (!alt || dogImages[breed]) break;
+          try {
+            const res = await fetch(`${DOG_API}/breed/${alt}/images/random`);
+            const data = await res.json();
+            if (data.status === 'success' && data.message) {
+              dogImages[breed] = data.message;
+              break;
+            }
+          } catch (_) {}
+        }
+        
+        if (!dogImages[breed]) {
+          imageLoadFailed[breed] = true;
+        }
+      }
+    }
+    
+    function getDogEmoji(breed) {
+      const emojis = ['🐕', '🦮', '🐩', '🐾', '🦴'];
+      let hash = 0;
+      for (let i = 0; i < breed.length; i++) {
+        hash = breed.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      return emojis[Math.abs(hash) % emojis.length];
     }
     
     function renderDogs(filter = '') {
@@ -125,20 +594,34 @@
       }
       
       empty.style.display = 'none';
-      grid.innerHTML = filtered.map(([breed, varieties]) => `
-        <div class="dog-card">
-          <div class="dog-breed">${breed}</div>
-          <div class="dog-varieties">
-            ${varieties.length > 0 
-              ? varieties.map(v => `<span>${v}</span>`).join('') 
-              : '<em>No varieties</em>'}
+      grid.innerHTML = filtered.map(([breed, varieties]) => {
+        const img = dogImages[breed];
+        const failed = imageLoadFailed[breed];
+        
+        return `
+          <div class="dog-card">
+            ${img && !failed 
+              ? `<img src="${img}" class="dog-image loading" alt="${breed}" 
+                   onload="this.classList.remove('loading')" 
+                   onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                 <div class="dog-image-placeholder" style="display:none">${getDogEmoji(breed)}</div>`
+              : `<div class="dog-image-placeholder">${getDogEmoji(breed)}</div>`
+            }
+            <div class="dog-content">
+              <div class="dog-breed">${breed}</div>
+              <div class="dog-varieties">
+                ${varieties && varieties.length > 0 
+                  ? varieties.map(v => `<span>${v}</span>`).join('')
+                  : '<span style="opacity:0.5">No varieties</span>'}
+              </div>
+              <div class="dog-actions">
+                <button class="btn-ghost" onclick="editBreed('${breed}')">Edit</button>
+                <button class="btn-danger" onclick="deleteBreed('${breed}')">Delete</button>
+              </div>
+            </div>
           </div>
-          <div class="dog-actions">
-            <button class="btn-edit btn-small" onclick="editBreed('${breed}')">Edit</button>
-            <button class="btn-danger btn-small" onclick="deleteBreed('${breed}')">Delete</button>
-          </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
     
     function filterDogs() {
@@ -153,7 +636,7 @@
       const varietiesStr = varietiesInput.value.trim();
       
       if (!breed) {
-        showError('Please enter a breed name');
+        showMessage('Please enter a breed name', 'error');
         return;
       }
       
@@ -168,20 +651,25 @@
           body: JSON.stringify({ breed, varieties })
         });
         
+        const data = await res.json();
+        
         if (res.status === 409) {
-          showError('Breed already exists');
+          showMessage('Breed already exists', 'error');
           return;
         }
         
-        if (!res.ok) throw new Error('Failed to add');
+        if (!res.ok) {
+          showMessage(data.error || 'Failed to add breed', 'error');
+          return;
+        }
         
         breedInput.value = '';
         varietiesInput.value = '';
-        hideMessages();
+        hideMessage();
         await loadDogs();
-        showToast('Breed added successfully!');
+        showToast('Breed added successfully!', 'success');
       } catch (e) {
-        showError('Failed to add breed');
+        showMessage('Failed to add breed. Please try again.', 'error');
       }
     }
     
@@ -202,7 +690,7 @@
       const varietiesStr = document.getElementById('editVarieties').value;
       
       if (!newBreed) {
-        showError('Please enter a breed name');
+        showMessage('Please enter a breed name', 'error');
         return;
       }
       
@@ -211,7 +699,6 @@
         : [];
       
       try {
-        // If breed name changed, delete old and create new
         if (oldBreed !== newBreed) {
           await fetch(`${API}/${oldBreed}`, { method: 'DELETE' });
           await fetch(API, {
@@ -229,9 +716,9 @@
         
         closeModal();
         await loadDogs();
-        showToast('Breed updated!');
+        showToast('Breed updated!', 'success');
       } catch (e) {
-        showError('Failed to update breed');
+        showMessage('Failed to update breed', 'error');
       }
     }
     
@@ -241,30 +728,35 @@
       try {
         await fetch(`${API}/${breed}`, { method: 'DELETE' });
         await loadDogs();
-        showToast('Breed deleted');
+        showToast('Breed deleted', 'success');
       } catch (e) {
-        showError('Failed to delete breed');
+        showToast('Failed to delete breed', 'error');
       }
     }
     
-    function showError(msg) {
-      const el = document.getElementById('error');
+    function showMessage(msg, type) {
+      const el = document.getElementById('message');
       el.textContent = msg;
+      el.className = `message ${type}`;
       el.style.display = 'block';
-      setTimeout(() => el.style.display = 'none', 3000);
     }
     
-    function showToast(msg) {
+    function hideMessage() {
+      document.getElementById('message').style.display = 'none';
+    }
+    
+    function showToast(msg, type = '') {
       const el = document.getElementById('toast');
       el.textContent = msg;
-      el.classList.add('show');
-      setTimeout(() => el.classList.remove('show'), 2500);
+      el.className = `toast ${type}`;
+      setTimeout(() => el.classList.add('show'), 10);
+      setTimeout(() => el.classList.remove('show'), 3000);
     }
     
-    function hideMessages() {
-      document.getElementById('error').style.display = 'none';
-      document.getElementById('success').style.display = 'none';
-    }
+    // Close modal on backdrop click
+    document.getElementById('editModal').addEventListener('click', (e) => {
+      if (e.target.id === 'editModal') closeModal();
+    });
     
     loadDogs();
   </script>

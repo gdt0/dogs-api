@@ -121,7 +121,8 @@
  ],
  "sheepdog": [
   "english",
-  "shetland"
+  "shetland",
+  "Indian"
  ],
  "shiba": [],
  "shihtzu": [],
@@ -159,6 +160,9 @@
   "westhighland",
   "wheaten",
   "yorkshire"
+ ],
+ "testbreedxyz": [
+  "variety1"
  ],
  "vizsla": [],
  "weimaraner": [],

@@ -6,12 +6,27 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 )
 
-var dataFile = "dogs.json"
+var dataFile string
+
+func init() {
+	// Use absolute path relative to executable
+	execPath, err := os.Executable()
+	if err != nil {
+		execDir := "."
+		if ex, err := os.Executable(); err == nil {
+			execDir = filepath.Dir(ex)
+		}
+		dataFile = filepath.Join(execDir, "dogs.json")
+	} else {
+		dataFile = filepath.Join(filepath.Dir(execPath), "dogs.json")
+	}
+}
 
 type Dogs map[string][]string
 
@@ -94,6 +109,11 @@ func main() {
 				return
 			}
 			breed := strings.ToLower(input.Breed)
+			breed = strings.TrimSpace(breed)
+			if breed == "" {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Breed name cannot be empty"})
+				return
+			}
 			dogs, err := loadDogs()
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -170,5 +190,6 @@ func main() {
 		port = "8080"
 	}
 	log.Printf("Server running on http://localhost:%s", port)
+	log.Printf("Data file: %s", dataFile)
 	r.Run(":" + port)
 }
